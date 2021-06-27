@@ -38,6 +38,7 @@ template <typename T, typename Tag> struct boxed
     );
 
     using inner_type = T;
+    using tag_type = Tag;
 
     constexpr boxed(): value{} {}
     constexpr explicit boxed(T _value) noexcept: value{_value} {}
@@ -68,10 +69,20 @@ template <typename T, typename U> constexpr boxed<T, U> operator-(boxed<T, U> co
 template <typename T, typename U> constexpr boxed<T, U> operator*(boxed<T, U> const& a, boxed<T, U> const& b) noexcept { return boxed<T, U>{a.value * b.value}; }
 template <typename T, typename U> constexpr boxed<T, U> operator/(boxed<T, U> const& a, boxed<T, U> const& b) noexcept { return boxed<T, U>{a.value / b.value}; }
 
-template <typename From, typename FromTag, typename To, typename ToTag>
+template <typename To, typename From, typename FromTag>
 constexpr auto boxed_cast(boxed<From, FromTag> const& from) noexcept
 {
-    return boxed<To, ToTag>{from.value};
+    static_assert(
+        std::is_same_v<
+            To,
+            boxed<
+                typename To::inner_type,
+                typename To::tag_type
+            >
+        >,
+        "boxed_cast<T> can only cast to T if T is a specialization of boxed<>."
+    );
+    return To{static_cast<typename To::inner_type>(from.value)};
 }
 
 } // end namespace boxed

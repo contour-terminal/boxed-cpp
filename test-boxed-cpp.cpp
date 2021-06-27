@@ -34,3 +34,24 @@ TEST_CASE("boxed")
     auto constexpr l = length(r);
     static_assert(l == Length{3});
 }
+
+TEST_CASE("boxed_cast")
+{
+    auto constexpr f = From{3};
+    auto constexpr t = boxed::boxed_cast<To>(f);
+    static_assert(*f == *t);
+    static_assert(std::is_same_v<decltype(t), To const>);
+}
+
+namespace tags { struct N{}; struct Z{}; }
+using N = boxed::boxed<unsigned int, tags::N>;
+using Z = boxed::boxed<signed int, tags::Z>;
+
+TEST_CASE("boxed_cast with different inner types")
+{
+    auto constexpr a = N{3};
+    auto constexpr b = boxed::boxed_cast<Z>(a);
+
+    static_assert(*a == *b);
+    static_assert(std::is_same_v<decltype(b), Z const>);
+}
