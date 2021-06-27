@@ -1,0 +1,38 @@
+# Visual Studio Code
+.vscode
+.vscode/**
+build
+build/**
+release
+release/**
+
+# Visual Studio
+.vs
+.vs/**
+out
+out/**
+CMakeSettings.json
+
+# VIM: code completion / IntelliSense
+.clangd
+.clangd/**
+.cache
+.cache/**
+compile_commands.json
+.vimspector.json
+
+# CMake (CTest)
+/Testing/
+
+# This is a workspace-local sandbox directory with test files not to be included in Git.
+sandbox
+sandbox/**
+
+# Never add any log files.
+*.log
+
+# OS X
+.DS_Store
+
+# Linux/KDE
+.directory
