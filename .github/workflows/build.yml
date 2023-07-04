@@ -1,0 +1,52 @@
+name : Build
+
+on:
+  push:
+    branches:
+        - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  ubuntu_2204:
+    strategy:
+      fail-fast: false
+      matrix:
+        cxx: [11,14,17, 20]
+        build_type: ["RelWithDebInfo"]
+        compiler:
+          [
+            "g++-11",
+            "clang++-14"
+          ]
+    name: "Ubuntu 22.04 (${{ matrix.compiler }}, C++${{ matrix.cxx }}, ${{matrix.build_type}})"
+    runs-on: ubuntu-22.04
+    outputs:
+      id: "${{ matrix.compiler }} (C++${{ matrix.cxx }}, ${{ matrix.build_type }})"
+    steps:
+      - uses: actions/checkout@v3
+      - name: ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: "ccache-ubuntu2204-${{ matrix.compiler }}-${{ matrix.cxx }}-${{ matrix.build_type }}"
+          max-size: 256M
+      - name: "update APT database"
+        run: sudo apt -q update
+
+      - name: Install GCC 11
+        if: ${{ startsWith(matrix.compiler, 'g++-11') }}
+        run: sudo apt install -y g++-11
+      - name: Install Clang 14
+        if: ${{ startsWith(matrix.compiler, 'clang++-14') }}
+        run: sudo apt install -y clang-14
+
+      - name: "Download dependencies"
+        run: sudo apt install cmake ninja-build
+      - name: "Cmake configure"
+        run:  cmake -S . -B build -G Ninja -D BOXED_CPP_TESTS=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}  -DCMAKE_CXX_STANDARD=${{ matrix.cxx }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
+      - name: "build "
+        run: cmake --build build  --parallel 3
+
+      - name: "run test"
+        run: ./build/test-boxed-cpp

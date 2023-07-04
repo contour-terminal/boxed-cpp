@@ -11,8 +11,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 #include <boxed-cpp/boxed.hpp>
 #include <catch2/catch.hpp>
+#include <limits>
 
 namespace tags { struct Length{}; struct From{}; struct To{}; }
 
@@ -54,4 +56,26 @@ TEST_CASE("boxed_cast with different inner types")
 
     static_assert(*a == *b);
     static_assert(std::is_same_v<decltype(b), Z const>);
+}
+
+struct Speed_tag{};
+struct Permittivity_tag{};
+struct Permeability_tag;
+using Speed = boxed::boxed<double,Speed_tag>;
+using Permittivity = boxed::boxed<double,Permittivity_tag>;
+using Permeability = boxed::boxed<double,Permeability_tag>;
+
+TEST_CASE("function with boxed variables")
+{
+    auto wave_speed = [](Permittivity epsilon, Permeability mu) -> Speed
+    {
+        return Speed(1.0 / std::sqrt(unbox(epsilon) * unbox(mu)));
+    };
+    REQUIRE(wave_speed(Permittivity(1.0),Permeability(1.0)) == Speed(1.0));
+    auto speed_of_light = Speed(299792458.0);
+    auto vacuum_permittivity = Permittivity(8.85418781762039e-12);
+    auto pi = 3.14159265358979323846;
+    auto vacuum_permeability = Permeability(4 * pi * 1e-7);
+    auto value = std::abs(unbox( wave_speed(vacuum_permittivity, vacuum_permeability) - speed_of_light ));
+    REQUIRE(value < std::numeric_limits<double>::epsilon());
 }
