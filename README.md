@@ -1,7 +1,7 @@
 # C++ primitive type boxing
 
 This is a small header-only library for easing primitive type boxing in C++.
-Primary goal of the library is to make it easy to avoid code with easily swappable parameters [clang-tidy:bugprone-easily-swappable-parameters](https://clang.llvm.org/extra/clang-tidy/checks/bugprone/easily-swappable-parameters.html?highlight=swappable).
+Primary goal of the library is to make it easy to avoid code with easily swappable parameters [clang-tidy:bugprone-easily-swappable-parameters](https://clang.llvm.org/extra/clang-tidy/checks/bugprone/easily-swappable-parameters.html).
 
 Overview on the topic: [C++ Weekly With Jason Turner](https://www.youtube.com/watch?v=Zq4yYPG7Erc)
 
@@ -18,9 +18,9 @@ This header can be simply copied into a project or used via CMake builtin functi
 // Create unique structures
 namespace tags { struct Speed{}; struct Permittivity{}; struct Permeability{}; }
 
-using Speed = boxed::boxed<double,tags::Speed>;
-using Permittivity = boxed::boxed<double,tags::Permittivity>;
-using Permeability = boxed::boxed<double,tags::Permeability>;
+using Speed = boxed::boxed<double, tags::Speed>;
+using Permittivity = boxed::boxed<double, tags::Permittivity>;
+using Permeability = boxed::boxed<double, tags::Permeability>;
 
 
 int main()
