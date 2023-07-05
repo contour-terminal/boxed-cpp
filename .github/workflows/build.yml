@@ -13,11 +13,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        cxx: [11,14,17, 20]
+        cxx: [17,20]
         build_type: ["RelWithDebInfo"]
         compiler:
           [
-            "g++-11",
+            "g++-12",
             "clang++-14"
           ]
     name: "Ubuntu 22.04 (${{ matrix.compiler }}, C++${{ matrix.cxx }}, ${{matrix.build_type}})"
@@ -34,17 +34,13 @@ jobs:
       - name: "update APT database"
         run: sudo apt -q update
 
-      - name: Install GCC 11
-        if: ${{ startsWith(matrix.compiler, 'g++-11') }}
-        run: sudo apt install -y g++-11
-      - name: Install Clang 14
-        if: ${{ startsWith(matrix.compiler, 'clang++-14') }}
-        run: sudo apt install -y clang-14
+      - name: Install Compilers
+        run: sudo apt install -y g++-11  clang-14
 
       - name: "Download dependencies"
         run: sudo apt install cmake ninja-build
       - name: "Cmake configure"
-        run:  cmake -S . -B build -G Ninja -D BOXED_CPP_TESTS=ON -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}  -DCMAKE_CXX_STANDARD=${{ matrix.cxx }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
+        run:  cmake -S . -B build -G Ninja -D BOXED_CPP_TESTS=ON -D ENABLE_TIDY=ON -DPEDANTIC_COMPILER=ON -D CMAKE_CXX_FLAGS="-Wno-unknown-warning-option" -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}  -DCMAKE_CXX_STANDARD=${{ matrix.cxx }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
       - name: "build "
         run: cmake --build build  --parallel 3
 
