@@ -39,7 +39,6 @@ int main()
 
 ```
 
-`
 # More advanced usage
 You can forget about the order of parameters in your code
 
