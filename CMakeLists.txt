@@ -1,12 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
-project(contour VERSION "0.1.0" LANGUAGES CXX)
+project(boxed-cpp VERSION "0.1.0" LANGUAGES CXX)
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 include(ThirdParties)
-ThirdPartiesAdd_Catch2()
-
 include(ClangTidy)
 include(PedanticCompiler)
 
@@ -26,6 +24,7 @@ target_include_directories(boxed-cpp INTERFACE
 
 option(BOXED_CPP_TESTS "Enables building of unittests for boxed-cpp [default: ON]" OFF)
 if(BOXED_CPP_TESTS)
+    ThirdPartiesAdd_Catch2()
     enable_testing()
     add_executable(test-boxed-cpp
         test-boxed-cpp.cpp

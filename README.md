@@ -1,6 +1,9 @@
 # C++ primitive type boxing
 
 This is a small header-only library for easing primitive type boxing in C++.
+Primary goal of the library is to make it easy to avoid code with easily swappable parameters [clang-tidy:bugprone-easily-swappable-parameters](https://clang.llvm.org/extra/clang-tidy/checks/bugprone/easily-swappable-parameters.html).
+
+Overview on the topic: [C++ Weekly With Jason Turner](https://www.youtube.com/watch?v=Zq4yYPG7Erc)
 
 library is created to aid code health in [Contour Terminal Emulator](https://github.com/christianparpart/contour/).
 
@@ -15,9 +18,9 @@ This header can be simply copied into a project or used via CMake builtin functi
 // Create unique structures
 namespace tags { struct Speed{}; struct Permittivity{}; struct Permeability{}; }
 
-using Speed = boxed::boxed<double,tags::Speed>;
-using Permittivity = boxed::boxed<double,tags::Permittivity>;
-using Permeability = boxed::boxed<double,tags::Permeability>;
+using Speed = boxed::boxed<double, tags::Speed>;
+using Permittivity = boxed::boxed<double, tags::Permittivity>;
+using Permeability = boxed::boxed<double, tags::Permeability>;
 
 
 int main()
@@ -37,6 +40,50 @@ int main()
 ```
 
 `
+# More advanced usage
+You can forget about the order of parameters in your code
+
+``` c++
+#include <boxed-cpp/boxed.hpp>
+
+// Create unique structures
+namespace tags { struct Speed{}; struct Permittivity{}; struct Permeability{}; }
+
+using Speed = boxed::boxed<double, tags::Speed>;
+using Permittivity = boxed::boxed<double, tags::Permittivity>;
+using Permeability = boxed::boxed<double, tags::Permeability>;
+
+Speed wave_speed_inside(Permittivity epsilon, Permeability mu)
+{
+    return Speed(1.0 / std::sqrt(unbox(epsilon) * unbox(mu)));
+};
+
+template <typename T, typename S>
+Speed wave_speed(T t, S s) // recursive variadic function
+{
+    if constexpr (std::is_same_v<T, Permittivity>)
+    {
+        return wave_speed_inside(t, s);
+    }
+    else
+    {
+        return wave_speed_inside(s, t);
+    }
+}
+
+
+int main()
+{
+    constexpr auto vacuum_permittivity = Permittivity(8.85418781762039e-12);
+    constexpr auto pi = 3.14159265358979323846;
+    constexpr auto vacuum_permeability = Permeability(4 * pi * 1e-7);
+
+    auto speed_one = wave_speed(vacuum_permittivity, vacuum_permeability);
+    auto speed_two = wave_speed(vacuum_permeability, vacuum_permittivity);
+    // speed_one == speed_two
+}
+```
+
 
 
 ### License
