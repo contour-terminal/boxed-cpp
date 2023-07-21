@@ -68,6 +68,7 @@ struct boxed
 
     [[nodiscard]] constexpr T& get() noexcept { return value; }
     [[nodiscard]] constexpr T const& get() const noexcept { return value; }
+    constexpr operator T() const && {return value;}
 
     template <typename To>
     [[nodiscard]] constexpr auto as() const noexcept
