@@ -11,6 +11,7 @@ This header can be simply copied into a project or used via CMake builtin functi
 
 # Simple usage
 
+Example of creation boxed structures and usage
 ``` c++
 
 #include <boxed-cpp/boxed.hpp>
@@ -38,6 +39,28 @@ int main()
 }
 
 ```
+
+
+When you need to get value from boxed type, you need to unbox it
+``` c++
+//unbox in declared type. double in this case
+auto speed_value_native = unbox(speed_of_light);
+//unbox into float type
+auto speed_value_float = unbox<float>(speed_of_light);
+// unbox into int type
+auto speed_value_int = unbox<int>(speed_of_light);
+```
+
+
+You can also evaluate expressions with boxed types without the need of unboxing them if explicitly declare the resulted type
+``` c++
+auto speed_of_light = Speed(299792458.0);
+auto value = speed_of_light * 2.0; // type of value is Speed
+
+// boxed value will be automatically unboxed into type that was boxed, in this case double
+double value_d = speed_of_light * 2.0;
+```
+
 
 # More advanced usage
 You can forget about the order of parameters in your code

@@ -15,6 +15,7 @@
 #include <boxed-cpp/boxed.hpp>
 #include <catch2/catch.hpp>
 #include <limits>
+#include <type_traits>
 
 namespace tags { struct Length{}; struct From{}; struct To{}; }
 
@@ -79,4 +80,33 @@ TEST_CASE("function with boxed variables")
     auto vacuum_permeability = Permeability(4 * pi * 1e-7);
     auto value = std::abs(unbox( wave_speed(vacuum_permittivity, vacuum_permeability) - speed_of_light ));
     REQUIRE(value < std::numeric_limits<double>::epsilon());
+}
+
+TEST_CASE("unbox types check")
+{
+    auto speed_of_light = Speed(299792458.0);
+    auto speed_value_native = unbox(speed_of_light);
+    static_assert(std::is_same_v<decltype(speed_value_native),double>);
+    auto speed_value_float = unbox<float>(speed_of_light);
+    static_assert(std::is_same_v<decltype(speed_value_float),float>);
+    auto speed_value_int = unbox<int>(speed_of_light);
+    static_assert(std::is_same_v<decltype(speed_value_int),int>);
+}
+
+
+TEST_CASE("unbox without template parameters to initial type")
+{
+    auto speed_of_light = Speed(299792458.0);
+    REQUIRE( std::abs(unbox(speed_of_light) - 299792458.0) < std::numeric_limits<double>::epsilon());
+}
+
+TEST_CASE("cast inside rvalue")
+{
+    auto speed_of_light = Speed(299792458.0);
+
+    auto distance_auto = speed_of_light * 2.0;
+    static_assert(std::is_same_v<decltype(distance_auto),Speed>);
+
+    double distance_d = speed_of_light * 2.0;
+    REQUIRE(distance_d - 2.0 * 299792458.0 < std::numeric_limits<double>::epsilon());
 }
