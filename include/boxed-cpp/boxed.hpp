@@ -215,7 +215,7 @@ namespace fmt
         template <typename FormatContext>
         auto format(const boxed::boxed<A, B> _value, FormatContext& ctx)
         {
-            return format_to(ctx.out(), "{}", _value.value);
+            return fmt::format_to(ctx.out(), "{}", _value.value);
         }
     };
 }
