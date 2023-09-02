@@ -164,11 +164,17 @@ constexpr auto unbox(boxed::boxed<From, FromTag> const& from) noexcept
     return static_cast<To>(from.value);
 }
 
-// Casting a boxed type out of the box.
-template <typename From, typename FromTag>
-constexpr auto unbox(boxed::boxed<From, FromTag> const& from) noexcept
+template <typename T>
+concept con_boxed = requires(T t)
 {
-    return unbox<From,From,FromTag>(from);
+    typename T::inner_type;
+};
+
+// Casting a boxed type out of the box.
+template <con_boxed T>
+constexpr auto unbox(T from) noexcept
+{
+    return unbox<typename T::inner_type>(from);
 }
 
 namespace std
