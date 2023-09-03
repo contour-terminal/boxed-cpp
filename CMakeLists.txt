@@ -13,7 +13,7 @@ set(boxed_cpp_HEADERS
 )
 add_library(boxed-cpp INTERFACE)
 
-target_compile_features(boxed-cpp INTERFACE cxx_std_17)
+target_compile_features(boxed-cpp INTERFACE cxx_std_20)
 target_include_directories(boxed-cpp INTERFACE
     $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}/include>

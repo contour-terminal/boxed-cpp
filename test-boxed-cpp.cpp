@@ -110,3 +110,11 @@ TEST_CASE("cast inside rvalue")
     double distance_d = speed_of_light * 2.0;
     REQUIRE(distance_d - 2.0 * 299792458.0 < std::numeric_limits<double>::epsilon());
 }
+
+TEST_CASE("all options for unbox")
+{
+    auto speed_of_light = Speed(299792458.0);
+    REQUIRE(unbox<double>(speed_of_light));
+    REQUIRE(unbox<float>(speed_of_light));
+    REQUIRE(unbox(speed_of_light));
+}
