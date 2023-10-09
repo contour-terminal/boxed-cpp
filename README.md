@@ -63,46 +63,70 @@ double value_d = speed_of_light * 2.0;
 
 
 # More advanced usage
-You can forget about the order of parameters in your code
+You can forget about the order of parameters in your code. Complete code see: [godbolt](https://godbolt.org/z/K8fqjqs34)
 
 ``` c++
-#include <boxed-cpp/boxed.hpp>
+namespace Tag{ struct Rho{}; struct Theta{}; struct Phi{};}
 
-// Create unique structures
-namespace tags { struct Speed{}; struct Permittivity{}; struct Permeability{}; }
+using rho_type = boxed::boxed<double,Tag::Rho>;
+using theta_type = boxed::boxed<double,Tag::Theta>;
+using phi_type = boxed::boxed<double,Tag::Phi>;
 
-using Speed = boxed::boxed<double, tags::Speed>;
-using Permittivity = boxed::boxed<double, tags::Permittivity>;
-using Permeability = boxed::boxed<double, tags::Permeability>;
 
-Speed wave_speed_inside(Permittivity epsilon, Permeability mu)
+template<typename ...T>
+struct Wrap{};
+
+template<typename T, typename ...Rest>
+struct Wrap<T, Rest ...>
 {
-    return Speed(1.0 / std::sqrt(unbox(epsilon) * unbox(mu)));
+
+    constexpr static inline std::size_t n = 1 + sizeof...(Rest);
+    using fun_type = std::function<double(T)>;
+    Wrap(fun_type&& first,  std::function<double(Rest)>&& ...rest)
+        : first(std::forward<fun_type>(first))
+        , rest(std::forward<std::function<double(Rest)>>(rest)...)
+    {}
+
+    const fun_type first;
+    Wrap<Rest...> rest;
+
+    auto operator()(T v)
+    {
+        return first(v);
+    }
+
+    template<typename F>
+    requires (!std::is_same_v<T,F>)
+    decltype(auto) operator()(F v)
+    {
+        return rest(v);
+    }
+
+
+    template<typename ...Args>
+    requires (!std::derived_from<all_different<typename std::decay<Args>::type...>, std::false_type>)
+    decltype(auto) operator()(Args &&... args)
+    {
+        static_assert( (sizeof...(Args) == n) );
+        return ( operator()(std::forward<Args>(args)) * ... );
+    }
 };
 
-template <typename T, typename S>
-Speed wave_speed(T t, S s) // recursive variadic function
-{
-    if constexpr (std::is_same_v<T, Permittivity>)
-    {
-        return wave_speed_inside(t, s);
-    }
-    else
-    {
-        return wave_speed_inside(s, t);
-    }
-}
+auto x_coord = Wrap<rho_type,theta_type,phi_type>{
+                                                  [](rho_type rho){ return unbox(rho); },
+                                                  [](theta_type theta){ return sin(unbox(theta)); },
+                                                  [](phi_type phi){ return cos(unbox(phi)); }
+                                                  };
 
 
 int main()
 {
-    constexpr auto vacuum_permittivity = Permittivity(8.85418781762039e-12);
-    constexpr auto pi = 3.14159265358979323846;
-    constexpr auto vacuum_permeability = Permeability(4 * pi * 1e-7);
+    rho_type rho{1.0};
+    theta_type theta{3.14 / 3.0};
+    phi_type phi{3.14/2.0};
 
-    auto speed_one = wave_speed(vacuum_permittivity, vacuum_permeability);
-    auto speed_two = wave_speed(vacuum_permeability, vacuum_permittivity);
-    // speed_one == speed_two
+    assert(x_coord(rho,theta,phi) == x_coord(theta,rho,phi));
+    assert(x_coord(rho,theta,phi) == x_coord(phi,rho,theta));
 }
 ```
 
