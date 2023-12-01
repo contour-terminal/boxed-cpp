@@ -63,61 +63,37 @@ double value_d = speed_of_light * 2.0;
 
 
 # More advanced usage
-You can forget about the order of parameters in your code. Complete code see: [godbolt](https://godbolt.org/z/K8fqjqs34)
+You can forget about the order of parameters in your code. Complete code see: [godbolt](https://godbolt.org/z/K4r9d9far)
 
 ``` c++
-namespace Tag{ struct Rho{}; struct Theta{}; struct Phi{};}
-
 using rho_type = boxed::boxed<double,Tag::Rho>;
 using theta_type = boxed::boxed<double,Tag::Theta>;
 using phi_type = boxed::boxed<double,Tag::Phi>;
 
+template <typename... F>
+struct overload: F...{ using F::operator()...;};
 
-template<typename ...T>
-struct Wrap{};
+template<typename... Ts> overload(Ts...) -> overload<Ts...>;
 
-template<typename T, typename ...Rest>
-struct Wrap<T, Rest ...>
+template<typename... Ts>
+struct Wrap
 {
+    overload<Ts...> func_wrap;
 
-    constexpr static inline std::size_t n = 1 + sizeof...(Rest);
-    using fun_type = std::function<double(T)>;
-    Wrap(fun_type&& first,  std::function<double(Rest)>&& ...rest)
-        : first(std::forward<fun_type>(first))
-        , rest(std::forward<std::function<double(Rest)>>(rest)...)
-    {}
+    Wrap(Ts... funcs): func_wrap(funcs...){}
 
-    const fun_type first;
-    Wrap<Rest...> rest;
-
-    auto operator()(T v)
+    template<typename... Args>
+    auto operator()(Args... args)
     {
-        return first(v);
-    }
-
-    template<typename F>
-    requires (!std::is_same_v<T,F>)
-    decltype(auto) operator()(F v)
-    {
-        return rest(v);
-    }
-
-
-    template<typename ...Args>
-    requires (!std::derived_from<all_different<typename std::decay<Args>::type...>, std::false_type>)
-    decltype(auto) operator()(Args &&... args)
-    {
-        static_assert( (sizeof...(Args) == n) );
-        return ( operator()(std::forward<Args>(args)) * ... );
+        return (func_wrap(args)*...);
     }
 };
 
-auto x_coord = Wrap<rho_type,theta_type,phi_type>{
-                                                  [](rho_type rho){ return unbox(rho); },
-                                                  [](theta_type theta){ return sin(unbox(theta)); },
-                                                  [](phi_type phi){ return cos(unbox(phi)); }
-                                                  };
 
+auto x_coord = Wrap([](rho_type rho){ return unbox(rho); },
+                     [](theta_type theta){ return sin(unbox(theta)); },
+                     [](phi_type phi){ return cos(unbox(phi)); }
+                    );
 
 int main()
 {
@@ -126,6 +102,7 @@ int main()
     phi_type phi{3.14/2.0};
 
     assert(x_coord(rho,theta,phi) == x_coord(theta,rho,phi));
+    assert(x_coord(rho,theta,phi) == x_coord(phi,rho,theta));
     assert(x_coord(rho,theta,phi) == x_coord(phi,rho,theta));
 }
 ```
