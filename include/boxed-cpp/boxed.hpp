@@ -112,6 +112,11 @@ template <typename T, typename U> constexpr boxed<T, U> operator-(boxed<T, U> co
 template <typename T, typename U> constexpr boxed<T, U> operator*(boxed<T, U> const& a, T b) noexcept { return boxed<T, U>{a.value * b}; }
 template <typename T, typename U> constexpr boxed<T, U> operator/(boxed<T, U> const& a, T b) noexcept { return boxed<T, U>{a.value / b}; }
 
+template <typename T, typename U> constexpr boxed<T, U> operator+(T b, boxed<T, U> const& a) noexcept { return boxed<T, U>{b - a.value}; }
+template <typename T, typename U> constexpr boxed<T, U> operator-(T b, boxed<T, U> const& a) noexcept { return boxed<T, U>{b - a.value}; }
+template <typename T, typename U> constexpr boxed<T, U> operator*(T b, boxed<T, U> const& a) noexcept { return boxed<T, U>{b * a.value}; }
+template <typename T, typename U> constexpr boxed<T, U> operator/(T b, boxed<T, U> const& a) noexcept { return boxed<T, U>{b / a.value}; }
+
 template <typename T, typename U> constexpr boxed<T, U>& operator+=(boxed<T, U>& a, boxed<T, U> const& b) noexcept { a.value += b.value; return a; }
 template <typename T, typename U> constexpr boxed<T, U>& operator-=(boxed<T, U>& a, boxed<T, U> const& b) noexcept { a.value -= b.value; return a; }
 template <typename T, typename U> constexpr boxed<T, U>& operator*=(boxed<T, U>& a, boxed<T, U> const& b) noexcept { a.value *= b.value; return a; }

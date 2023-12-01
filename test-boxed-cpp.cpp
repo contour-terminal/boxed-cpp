@@ -91,11 +91,15 @@ TEST_CASE("cast inside rvalue")
 {
     auto speed_of_light = Speed(299792458.0);
 
-    auto distance_auto = speed_of_light * 2.0;
-    static_assert(std::is_same_v<decltype(distance_auto),Speed>);
+    auto distance_auto_right = speed_of_light * 2.0;
+    auto distance_auto_left = 2.0 * speed_of_light;
+    static_assert(std::is_same_v<decltype(distance_auto_right),Speed>);
+    static_assert(std::is_same_v<decltype(distance_auto_left),Speed>);
 
-    double distance_d = speed_of_light * 2.0;
-    REQUIRE(distance_d - 2.0 * 299792458.0 < std::numeric_limits<double>::epsilon());
+    double distance_d_right = speed_of_light * 2.0;
+    double distance_d_left =  2.0 * speed_of_light;
+    REQUIRE(distance_d_right - 2.0 * 299792458.0 < std::numeric_limits<double>::epsilon());
+    REQUIRE(distance_d_left - 2.0 * 299792458.0 < std::numeric_limits<double>::epsilon());
 }
 
 TEST_CASE("all options for unbox")
