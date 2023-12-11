@@ -199,9 +199,9 @@ struct hash<boxed::boxed<T, U>>
 };
 } // namespace std
 // {{{ fmtlib integration
+// clang-format off
 #if __has_include(<fmt/format.h>)
 
-// clang-format off
 #include <fmt/format.h>
 // clang-format on
 

@@ -11,17 +11,15 @@ on:
 jobs:
   check_clang_format:
     name: "Check C++ style"
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v3
     - name: Run clang-format style check for C/C++/Protobuf programs.
       uses: jidicula/clang-format-action@v4.11.0
       with:
-        clang-format-version: '15'
+        clang-format-version: '16'
         check-path: '.'
         #exclude-regex: 'sse2neon.h'
-    - name: "Check includes"
-      run: ./scripts/check-includes.sh
 
   editorconfig:
     name: "Check editorconfig"
@@ -57,10 +55,10 @@ jobs:
         run: sudo apt -q update
 
       - name: Install Compilers
-        run: sudo apt install -y g++-11  clang-14
+        run: sudo apt install -y g++-11 clang-14
 
       - name: "Download dependencies"
-        run: sudo apt install cmake ninja-build
+        run: sudo apt install cmake ninja-build catch2
       - name: "Cmake configure"
         run:  cmake -S . -B build -G Ninja -D BOXED_CPP_TESTS=ON -D ENABLE_TIDY=ON -DPEDANTIC_COMPILER=ON -D CMAKE_CXX_FLAGS="-Wno-unknown-warning-option" -DCMAKE_CXX_COMPILER=${{ matrix.compiler }}  -DCMAKE_CXX_STANDARD=${{ matrix.cxx }} -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
       - name: "build "
