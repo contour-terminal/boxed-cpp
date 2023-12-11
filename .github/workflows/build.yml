@@ -9,6 +9,20 @@ on:
       - master
 
 jobs:
+  check_clang_format:
+    name: "Check C++ style"
+    runs-on: ubuntu-20.04
+    steps:
+    - uses: actions/checkout@v3
+    - name: Run clang-format style check for C/C++/Protobuf programs.
+      uses: jidicula/clang-format-action@v4.11.0
+      with:
+        clang-format-version: '15'
+        check-path: '.'
+        #exclude-regex: 'sse2neon.h'
+    - name: "Check includes"
+      run: ./scripts/check-includes.sh
+
   ubuntu_2204:
     strategy:
       fail-fast: false
