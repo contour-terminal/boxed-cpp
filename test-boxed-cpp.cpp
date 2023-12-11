@@ -1,15 +1,19 @@
 // SPDX-License-Identifier: Apache-2.0
 #include <boxed-cpp/boxed.hpp>
-#include <catch2/catch.hpp>
+#include <functional>
 #include <limits>
 #include <type_traits>
 
+#include <catch2/catch_test_macros.hpp>
+
+// clang-format off
 namespace tags { struct Length{}; struct From{}; struct To{}; }
 
 using Length = boxed::boxed<std::size_t, tags::Length>;
 using From = boxed::boxed<std::size_t, tags::From>;
 using To = boxed::boxed<std::size_t, tags::To>;
 struct Range { From from; To to; };
+// clang-format on
 
 constexpr Length length(Range range) noexcept
 {
