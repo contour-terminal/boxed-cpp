@@ -7,3 +7,14 @@ insert_final_newline = true
 end_of_line = lf
 charset = utf-8
 trim_trailing_whitespace = true
+
+[LICENSE.txt]
+end_of_line = unset
+indent_size = unset
+insert_final_newline = unset
+
+[.clang-format]
+indent_size = 2
+
+[*.yml]
+indent_size = 2

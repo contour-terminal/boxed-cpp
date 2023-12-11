@@ -38,15 +38,10 @@ TEST_CASE("boxed_cast")
     static_assert(std::is_same_v<decltype(t), To const>);
 }
 
-namespace tags
-{
-struct N
-{
-};
-struct Z
-{
-};
-} // namespace tags
+// clang-format off
+namespace tags { struct N {}; struct Z {}; }
+// clang-format on
+
 using N = boxed::boxed<unsigned int, tags::N>;
 using Z = boxed::boxed<signed int, tags::Z>;
 
@@ -129,13 +124,13 @@ TEST_CASE("all options for unbox")
 
 // clang-format off
 template<typename ...Ts>
-  struct not_same{};
+    struct not_same{};
 
 template<typename T>
-  struct not_same<T,T> : virtual std::false_type {};
+    struct not_same<T,T> : virtual std::false_type {};
 
 template<typename T,typename S>
-  struct not_same<T,S> : virtual std::true_type {} ;
+    struct not_same<T,S> : virtual std::true_type {} ;
 
 template <typename ...T>
 struct all_different : std::false_type {};
@@ -193,11 +188,13 @@ struct Wrap<T, Rest...>
     }
 };
 
-auto x_coord = Wrap<rho_type, theta_type, phi_type> { [](rho_type rho) { return unbox(rho); },
-                                                      [](theta_type theta) { return sin(unbox(theta)); },
-                                                      [](phi_type phi) {
-                                                          return cos(unbox(phi));
-                                                      } };
+// clang-format off
+auto x_coord = Wrap<rho_type, theta_type, phi_type> {
+    [](rho_type rho) { return unbox(rho); },
+    [](theta_type theta) { return sin(unbox(theta)); },
+    [](phi_type phi) { return cos(unbox(phi)); }
+};
+// clang-format on
 
 TEST_CASE("advanced usage")
 {

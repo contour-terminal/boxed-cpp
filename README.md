@@ -91,8 +91,8 @@ struct Wrap
 
 
 auto x_coord = Wrap([](rho_type rho){ return unbox(rho); },
-                     [](theta_type theta){ return sin(unbox(theta)); },
-                     [](phi_type phi){ return cos(unbox(phi)); }
+                    [](theta_type theta){ return sin(unbox(theta)); },
+                    [](phi_type phi){ return cos(unbox(phi)); }
                     );
 
 int main()
