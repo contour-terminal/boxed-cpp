@@ -1,13 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
-#include <cstdint>
-#include <type_traits>
-#include <cassert>
-#include <limits>
 #include <iostream>
+#include <limits>
+#include <type_traits>
 
-namespace boxed {
+namespace boxed
+{
 // {{{ forward decls
 template <typename T, typename Tag>
 struct boxed;
@@ -38,8 +37,12 @@ constexpr bool is_boxed = helper::is_boxed<T>::value;
 template <typename T, typename Tag>
 struct boxed
 {
-    static_assert(std::is_enum_v<T> || std::is_integral_v<T> || std::is_floating_point_v<T>,
-                  "Boxing is only useful on integral & floating point types.");
+    // clang-format off
+    static_assert(
+        std::is_enum_v<T> || std::is_integral_v<T> || std::is_floating_point_v<T>,
+        "Boxing is only useful on integral & floating point types."
+    );
+    // clang-format on
 
     using inner_type = T;
     using element_type = T;
@@ -56,7 +59,7 @@ struct boxed
 
     [[nodiscard]] constexpr T& get() noexcept { return value; }
     [[nodiscard]] constexpr T const& get() const noexcept { return value; }
-    constexpr operator T() const && {return value;}
+    constexpr operator T() const&& { return value; }
 
     template <typename To>
     [[nodiscard]] constexpr auto as() const noexcept
@@ -158,10 +161,7 @@ constexpr auto unbox(boxed::boxed<From, FromTag> const& from) noexcept
 }
 
 template <typename T>
-concept con_boxed = requires(T t)
-{
-    typename T::inner_type;
-};
+concept con_boxed = requires(T t) { typename T::inner_type; };
 
 // Casting a boxed type out of the box.
 template <con_boxed T>
@@ -203,20 +203,30 @@ struct hash<boxed::boxed<T, U>>
 };
 } // namespace std
 // {{{ fmtlib integration
+// clang-format off
 #if __has_include(<fmt/format.h>)
+
 #include <fmt/format.h>
+// clang-format on
+
 namespace fmt
 {
-    template <typename A, typename B>
-    struct formatter<boxed::boxed<A, B>> {
-        template <typename ParseContext>
-        constexpr auto parse(ParseContext& ctx) { return ctx.begin(); }
-        template <typename FormatContext>
-        auto format(const boxed::boxed<A, B> _value, FormatContext& ctx)
-        {
-            return fmt::format_to(ctx.out(), "{}", _value.value);
-        }
-    };
-}
+
+template <typename A, typename B>
+struct formatter<boxed::boxed<A, B>>
+{
+    template <typename ParseContext>
+    constexpr auto parse(ParseContext& ctx)
+    {
+        return ctx.begin();
+    }
+    template <typename FormatContext>
+    auto format(const boxed::boxed<A, B> _value, FormatContext& ctx)
+    {
+        return fmt::format_to(ctx.out(), "{}", _value.value);
+    }
+};
+
+} // namespace fmt
 #endif
 // }}}
