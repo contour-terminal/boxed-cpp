@@ -79,6 +79,8 @@ struct boxed
         else
             return boxed<T, Tag>(static_cast<T>(value));
     }
+
+    [[nodiscard]] constexpr auto operator<=>(boxed const& other) const noexcept = default;
 };
 
 template <typename T, typename U>
@@ -94,12 +96,6 @@ template <typename T, typename U> constexpr boxed<T, U>& operator--(boxed<T, U>&
 template <typename T, typename U> constexpr boxed<T, U> operator++(boxed<T, U>& a, int) noexcept { auto old = a; a.value++; return old; }
 template <typename T, typename U> constexpr boxed<T, U> operator--(boxed<T, U>& a, int) noexcept { auto old = a; a.value--; return old; }
 template <typename T, typename U> constexpr T const& operator*(boxed<T, U> const& a) noexcept { return a.value; }
-template <typename T, typename U> constexpr bool operator<(boxed<T, U> const& a, boxed<T, U> const& b) noexcept { return a.value < b.value; }
-template <typename T, typename U> constexpr bool operator>(boxed<T, U> const& a, boxed<T, U> const& b) noexcept { return a.value > b.value; }
-template <typename T, typename U> constexpr bool operator<=(boxed<T, U> const& a, boxed<T, U> const& b) noexcept { return a.value <= b.value; }
-template <typename T, typename U> constexpr bool operator>=(boxed<T, U> const& a, boxed<T, U> const& b) noexcept { return a.value >= b.value; }
-template <typename T, typename U> constexpr bool operator==(boxed<T, U> const& a, boxed<T, U> const& b) noexcept { return a.value == b.value; }
-template <typename T, typename U> constexpr bool operator!=(boxed<T, U> const& a, boxed<T, U> const& b) noexcept { return a.value != b.value; }
 template <typename T, typename U> constexpr bool operator!(boxed<T, U> const& a) noexcept { return !a.value; }
 template <typename T, typename U> constexpr boxed<T, U> operator+(boxed<T, U> const& a, boxed<T, U> const& b) noexcept { return boxed<T, U>{a.value + b.value}; }
 template <typename T, typename U> constexpr boxed<T, U> operator-(boxed<T, U> const& a, boxed<T, U> const& b) noexcept { return boxed<T, U>{a.value - b.value}; }
