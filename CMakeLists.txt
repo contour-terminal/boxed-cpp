@@ -52,8 +52,8 @@ install(EXPORT boxed-cpp-targets
 # ---------------------------------------------------------------------------
 # unit tests
 
-option(BOXED_CPP_TESTS "Enables building of unittests for boxed-cpp [default: OFF]" OFF)
-if(BOXED_CPP_TESTS)
+option(BOXED_TESTING "Enables building of unittests for boxed-cpp [default: OFF]" OFF)
+if(BOXED_TESTING)
     find_package(Catch2 3.4.0 QUIET)
     if(NOT Catch2_FOUND)
         ThirdPartiesAdd_Catch2()
@@ -62,7 +62,8 @@ if(BOXED_CPP_TESTS)
     add_executable(test-boxed-cpp
         test-boxed-cpp.cpp
     )
+    target_compile_features(test-boxed-cpp INTERFACE cxx_std_20)
     target_link_libraries(test-boxed-cpp boxed-cpp Catch2::Catch2WithMain)
     add_test(test-boxed-cpp ./test-boxed-cpp)
 endif()
-message(STATUS "[boxed-cpp] Compile unit tests: ${BOXED_CPP_TESTS}")
+message(STATUS "[boxed-cpp] Compile unit tests: ${BOXED_TESTING}")
