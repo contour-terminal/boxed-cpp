@@ -17,12 +17,10 @@ Example of creation boxed structures and usage
 #include <boxed-cpp/boxed.hpp>
 
 // Create unique structures
-namespace tags { struct Speed{}; struct Permittivity{}; struct Permeability{}; }
 
-using Speed = boxed::boxed<double, tags::Speed>;
-using Permittivity = boxed::boxed<double, tags::Permittivity>;
-using Permeability = boxed::boxed<double, tags::Permeability>;
-
+using Speed = boxed::boxed<double>;
+using Permittivity = boxed::boxed<double>;
+using Permeability = boxed::boxed<double>;
 
 int main()
 {
@@ -36,6 +34,9 @@ int main()
 
     auto speed = wave_speed(vacuum_permittivity, vacuum_permeability);
     // speed == Speed(299792458.0);
+
+    // Wrong order of parameters will result in compilation error
+    // wave_speed(vacuum_permeability, vacuum_permittivity);
 }
 
 ```
@@ -62,13 +63,13 @@ double value_d = speed_of_light * 2.0;
 ```
 
 
-# More advanced usage
-You can forget about the order of parameters in your code. Complete code see: [godbolt](https://godbolt.org/z/K4r9d9far)
+# More examples of usage
+You can crate functions that will automatically adjust order of parameters. Complete code see: [godbolt](https://godbolt.org/z/aqobbcGe6)
 
 ``` c++
-using rho_type = boxed::boxed<double,Tag::Rho>;
-using theta_type = boxed::boxed<double,Tag::Theta>;
-using phi_type = boxed::boxed<double,Tag::Phi>;
+using rho_type = boxed::boxed<double>;
+using theta_type = boxed::boxed<double>;
+using phi_type = boxed::boxed<double>;
 
 template <typename... F>
 struct overload: F...{ using F::operator()...;};
@@ -89,7 +90,6 @@ struct Wrap
     }
 };
 
-
 auto x_coord = Wrap([](rho_type rho){ return unbox(rho); },
                     [](theta_type theta){ return sin(unbox(theta)); },
                     [](phi_type phi){ return cos(unbox(phi)); }
@@ -101,9 +101,9 @@ int main()
     theta_type theta{3.14 / 3.0};
     phi_type phi{3.14/2.0};
 
-    assert(x_coord(rho,theta,phi) == x_coord(theta,rho,phi));
-    assert(x_coord(rho,theta,phi) == x_coord(phi,rho,theta));
-    assert(x_coord(rho,theta,phi) == x_coord(phi,rho,theta));
+    std::cout << x_coord(rho,theta,phi) << std::endl; // 0.000689428
+    std::cout << x_coord(phi,theta,rho) << std::endl; // 0.000689428
+    std::cout << x_coord(rho,phi,theta) << std::endl; // 0.000689428
 }
 ```
 

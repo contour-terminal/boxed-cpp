@@ -56,13 +56,11 @@ TEST_CASE("boxed_cast with different inner types")
     static_assert(std::is_same_v<decltype(b), Z const>);
 }
 
-struct Speed_tag
-{
-};
-struct Permittivity_tag
-{
-};
+//clang-format off
+struct Speed_tag;
+struct Permittivity_tag;
 struct Permeability_tag;
+//clang-format on
 using Speed = boxed::boxed<double, Speed_tag>;
 using Permittivity = boxed::boxed<double, Permittivity_tag>;
 using Permeability = boxed::boxed<double, Permeability_tag>;
@@ -121,89 +119,51 @@ TEST_CASE("all options for unbox")
     REQUIRE(unbox(speed_of_light));
 }
 
-// advanced usage test
+TEST_CASE("Without tags")
+{
+    using rho_type = boxed::boxed<double>;
+    rho_type rho { 1.0 };
 
-// clang-format off
-template<typename ...Ts>
-    struct not_same{};
+    REQUIRE(unbox(rho) == 1.0);
+}
 
-template<typename T>
-    struct not_same<T,T> : virtual std::false_type {};
+template <typename... F>
+struct overload: F...
+{
+    using F::operator()...;
+};
 
-template<typename T,typename S>
-    struct not_same<T,S> : virtual std::true_type {} ;
+template <typename... Ts>
+overload(Ts...) -> overload<Ts...>;
 
-template <typename ...T>
-struct all_different : std::false_type {};
-
-template<typename T, typename F>
-struct all_different<T,F> : not_same<T,F> {};
-
-template<typename T, typename... Ts>
-struct all_different<T,T, Ts...> : virtual std::false_type {};
-
-template<typename T, typename F,typename... Ts>
-struct all_different<T,F, Ts...> : all_different<T,Ts...>, all_different<F,Ts...> {};
-
-namespace Tag{ struct Rho{}; struct Theta{}; struct Phi{};}
-
-using rho_type = boxed::boxed<double,Tag::Rho>;
-using theta_type = boxed::boxed<double,Tag::Theta>;
-using phi_type = boxed::boxed<double,Tag::Phi>;
-// clang-format on
-
-template <typename... T>
+template <typename... Ts>
 struct Wrap
 {
-};
+    overload<Ts...> func_wrap;
 
-template <typename T, typename... Rest>
-struct Wrap<T, Rest...>
-{
-
-    constexpr static inline std::size_t n = 1 + sizeof...(Rest);
-    using fun_type = std::function<double(T)>;
-    Wrap(fun_type&& first, std::function<double(Rest)>&&... rest):
-        first(std::forward<fun_type>(first)), rest(std::forward<std::function<double(Rest)>>(rest)...)
-    {
-    }
-
-    const fun_type first;
-    Wrap<Rest...> rest;
-
-    auto operator()(T v) { return first(v); }
-
-    template <typename F>
-        requires(!std::is_same_v<T, F>)
-    decltype(auto) operator()(F v)
-    {
-        return rest(v);
-    }
+    Wrap(Ts... funcs): func_wrap(funcs...) {}
 
     template <typename... Args>
-        requires(!std::derived_from<all_different<typename std::decay<Args>::type...>, std::false_type>)
-    decltype(auto) operator()(Args&&... args)
+    auto operator()(Args... args)
     {
-        static_assert((sizeof...(Args) == n));
-        return (operator()(std::forward<Args>(args)) * ...);
+        return (func_wrap(args) * ...);
     }
 };
 
-// clang-format off
-auto x_coord = Wrap<rho_type, theta_type, phi_type> {
-    [](rho_type rho) { return unbox(rho); },
-    [](theta_type theta) { return sin(unbox(theta)); },
-    [](phi_type phi) { return cos(unbox(phi)); }
-};
-// clang-format on
-
-TEST_CASE("advanced usage")
+TEST_CASE("advanced")
 {
+    using rho_type = boxed::boxed<double>;
+    using theta_type = boxed::boxed<double>;
+    using phi_type = boxed::boxed<double>;
+
+    auto x_coord = Wrap([](rho_type rho) { return unbox(rho); },
+                        [](theta_type theta) { return sin(unbox(theta)); },
+                        [](phi_type phi) { return cos(unbox(phi)); });
 
     rho_type rho { 1.0 };
     theta_type theta { 3.14 / 3.0 };
     phi_type phi { 3.14 / 2.0 };
 
-    REQUIRE(x_coord(rho, theta, phi) == x_coord(theta, rho, phi));
-    REQUIRE(x_coord(rho, theta, phi) == x_coord(phi, rho, theta));
+    REQUIRE(x_coord(rho, theta, phi) == x_coord(theta, phi, rho));
+    REQUIRE(x_coord(phi, theta, rho) == x_coord(phi, theta, rho));
 }

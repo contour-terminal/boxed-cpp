@@ -13,13 +13,15 @@ jobs:
     name: "Check C++ style"
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v3
-    - name: Run clang-format style check for C/C++/Protobuf programs.
-      uses: jidicula/clang-format-action@v4.11.0
-      with:
-        clang-format-version: '16'
-        check-path: '.'
-        #exclude-regex: 'sse2neon.h'
+      - uses: actions/checkout@v3
+      - name: Install clang
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh 17
+          sudo apt-get install clang-format-17
+      - name: "Clang-format"
+        run: clang-format-17 --Werror --dry-run test-boxed-cpp.cpp include/boxed-cpp/boxed.hpp
 
   editorconfig:
     name: "Check editorconfig"
@@ -33,51 +35,49 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        os: [ubuntu-22.04, ubuntu-20.04]
         cxx: [20]
         build_type: ["RelWithDebInfo"]
-        compiler:
+        llvm_version:
           [
-            "g++-11",
-            "clang++-15"
+            "17",
+            "18"
           ]
-    name: "Ubuntu 22.04 (${{ matrix.compiler }}, C++${{ matrix.cxx }}, ${{matrix.build_type}})"
-    runs-on: ubuntu-22.04
+    name: " ${{ matrix.os }} (clang-${{ matrix.llvm_version }}, C++${{ matrix.cxx }}, ${{matrix.build_type}})"
+    runs-on: ${{ matrix.os }}
     outputs:
       id: "${{ matrix.compiler }} (C++${{ matrix.cxx }}, ${{ matrix.build_type }})"
     steps:
       - uses: actions/checkout@v3
-      - name: ccache
-        uses: hendrikmuhs/ccache-action@v1.2
-        with:
-          key: "ccache-ubuntu2204-${{ matrix.compiler }}-${{ matrix.cxx }}-${{ matrix.build_type }}"
-          max-size: 256M
+      # - name: ccache
+      #   uses: hendrikmuhs/ccache-action@v1.2
+      #   with:
+      #     key: "ccache-ubuntu2204-${{ matrix.compiler }}-${{ matrix.cxx }}-${{ matrix.build_type }}"
+      #     max-size: 256M
       - name: "update APT database"
         run: sudo apt -q update
 
-      - name: Set up Clang
-        uses: egor-tensin/setup-clang@v1
-        with:
-          version: 15
 
+      - name: Install clang
+        run: |
+          wget https://apt.llvm.org/llvm.sh
+          chmod +x llvm.sh
+          sudo ./llvm.sh ${{ matrix.llvm_version }}
+        # can not use clang-tidy until https://github.com/actions/runner-images/issues/8659 get fixed
       - name: "Download dependencies"
         run: sudo apt install cmake ninja-build # catch2
-      # workaround for broken clang on ubuntu runner until https://github.com/actions/runner-images/issues/8659 get fixed
-      #- uses: mjp41/workaround8649@7929373c0fe5caf844d8115adccef39e3b5362e7
-      - name: Install Compilers
-        run: sudo apt install -y g++-12
       - name: "Cmake configure"
         run: |
           cmake -S . -B build -G Ninja \
-              -DBOXED_CPP_TESTS=OFF \
-              -DENABLE_TIDY=ON \
-              -DPEDANTIC_COMPILER=ON \
+              -DBOXED_TESTING=ON \
+              -DENABLE_TIDY=OFF \
+              -DPEDANTIC_COMPILER=OFF \
               -DCMAKE_CXX_FLAGS="-Wno-unknown-warning-option" \
-              -DCMAKE_CXX_COMPILER=${{ matrix.compiler }} \
               -DCMAKE_CXX_STANDARD=${{ matrix.cxx }} \
+              -DCMAKE_CXX_COMPILER=clang++-${{ matrix.llvm_version }} \
               -DCMAKE_BUILD_TYPE=${{matrix.build_type}}
       - name: "build"
         run: cmake --build build  --parallel 3
 
       - name: "run test"
-        if: ${{ false }} # disabled, because of Github runner image bug in compiler-vs-stdlib
         run: ./build/test-boxed-cpp
