@@ -71,7 +71,7 @@ double value_d = speed_of_light * 2.0;
 
 
 # Another examples
-You can create functions that will automatically adjust order of parameters. [godbolt](https://godbolt.org/z/n8Ez5K6vq)
+You can create functions that will automatically adjust order of parameters. [godbolt](https://godbolt.org/z/roar9468x)
 
 ``` c++
 using rho_type = boxed::boxed<double>;
@@ -103,13 +103,12 @@ int main() {
   theta_type theta{3.14 / 3.0};
   phi_type phi{3.14 / 2.0};
 
-  std::cout << x_coord(rho, theta, phi) << std::endl;
-  std::cout << x_coord(phi, theta, rho) << std::endl;
-  std::cout << x_coord(rho, phi, theta) << std::endl;
+  x_coord(rho, theta, phi) == x_coord(phi, theta, rho);
+  x_coord(rho, theta, phi) == x_coord(theta, phi, rho);
 }
 ```
 
-Or using another approach: [godbolt](https://godbolt.org/z/fjhaaT5hh)
+Or using another approach: [godbolt](https://godbolt.org/z/rn1f4xbd6)
 
 ``` c++
 using rho_type = boxed::boxed<double>;
@@ -149,9 +148,8 @@ int main() {
   theta_type theta{3.14 / 3.0};
   phi_type phi{3.14 / 2.0};
 
-  std::cout << x_coord(rho, theta, phi) << std::endl;
-  std::cout << x_coord(phi, theta, rho) << std::endl;
-  std::cout << x_coord(rho, phi, theta) << std::endl;
+  x_coord(rho, theta, phi) == x_coord(phi, theta, rho);
+  x_coord(rho, theta, phi) == x_coord(theta, phi, rho);
 }
 ```
 
