@@ -14,6 +14,7 @@ namespace tags { struct Length{}; struct From{}; struct To{}; }
 using Length = boxed::boxed<std::size_t, tags::Length>;
 using From = boxed::boxed<std::size_t, tags::From>;
 using To = boxed::boxed<std::size_t, tags::To>;
+using BoxedDouble = boxed::boxed<double>;
 struct Range { From from; To to; };
 // clang-format on
 
@@ -29,6 +30,53 @@ TEST_CASE("boxed")
     auto constexpr r = Range { From { 2 }, To { 4 } };
     auto constexpr l = length(r);
     static_assert(l == Length { 3 });
+}
+
+TEST_CASE("boxed cout")
+{
+    auto constexpr r = Range { From { 2 }, To { 4 } };
+    auto constexpr l = length(r);
+    std::cout << l << std::endl;
+}
+
+TEST_CASE("boxed comparison")
+{
+    auto constexpr l1 = Length { 1 };
+    auto constexpr l2 = Length { 2 };
+    auto constexpr l3 = Length { 3 };
+    REQUIRE(l3 > l1);
+    REQUIRE(l2 < l3);
+    REQUIRE(l2 != l1);
+    REQUIRE(l1 == l1);
+}
+
+TEST_CASE("boxed_as")
+{
+    auto constexpr f = From { 3 };
+    To t = f.as<To>();
+    auto constexpr tint = f.as<int>();
+    REQUIRE(t.as<int>() == tint);
+
+    auto constexpr bd = BoxedDouble { 3.14 };
+    auto constexpr bdint = bd.as<int>();
+    // bd.as<To>(); // muse be compile error
+    REQUIRE(bdint == unbox<int>(bd));
+
+    auto constexpr t2 = To::cast_from(f);
+    REQUIRE(t2 == t);
+}
+
+TEST_CASE("boxed_get")
+{
+    auto constexpr cbd = BoxedDouble { 3.14 };
+    REQUIRE(cbd.get() == 3.14);
+
+    auto bd = BoxedDouble { 2.781 };
+    REQUIRE(bd.get() == 2.781);
+
+    auto& bdp = bd.get();
+    bdp += 1.0;
+    REQUIRE(bd.get() == 3.781);
 }
 
 TEST_CASE("boxed_cast")

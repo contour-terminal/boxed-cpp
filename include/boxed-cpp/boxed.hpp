@@ -12,6 +12,7 @@ namespace boxed
 namespace detail
 {
     template <typename T, typename Tag>
+        requires std::is_enum_v<T> || std::is_integral_v<T> || std::is_floating_point_v<T>
     struct boxed;
 }
 
@@ -52,15 +53,9 @@ constexpr bool is_boxed = helper::is_boxed<T>::value;
 namespace detail
 {
     template <typename T, typename Tag>
+        requires std::is_enum_v<T> || std::is_integral_v<T> || std::is_floating_point_v<T>
     struct boxed
     {
-        // clang-format off
-    static_assert(
-        std::is_enum_v<T> || std::is_integral_v<T> || std::is_floating_point_v<T>,
-        "Boxing is only useful on integral & floating point types."
-    );
-        // clang-format on
-
         using inner_type = T;
         using element_type = T;
 
@@ -81,10 +76,7 @@ namespace detail
         template <typename To>
         [[nodiscard]] constexpr auto as() const noexcept
         {
-            if constexpr (is_boxed<To>)
-                return To { static_cast<typename To::element_type>(value) };
-            else
-                return static_cast<To>(value);
+            return static_cast<To>(value);
         }
 
         template <typename Source>
@@ -99,13 +91,6 @@ namespace detail
 
         [[nodiscard]] constexpr auto operator<=>(boxed const& other) const noexcept = default;
     };
-
-    template <typename T, typename U>
-    std::ostream& operator<<(std::ostream& os, boxed<T, U> value)
-    {
-        os << value.value;
-        return os;
-    }
 
     // clang-format off
 template <typename T, typename U> constexpr boxed<T, U>& operator++(boxed<T, U>& a) noexcept { ++a.value; return a; }
@@ -229,18 +214,12 @@ struct hash<boxed::detail::boxed<T, U>>
 namespace fmt
 {
 
-template <typename A, typename B>
-struct formatter<boxed::detail::boxed<A, B>>
+template <typename Type, typename Tag>
+struct fmt::formatter<boxed::detail::boxed<Type, Tag>>
 {
-    template <typename ParseContext>
-    constexpr auto parse(ParseContext& ctx)
+    auto format(boxed::detail::boxed<Type, Tag> const& val, fmt::format_context& ctx)
     {
-        return ctx.begin();
-    }
-    template <typename FormatContext>
-    auto format(boxed::detail::boxed<A, B> _value, FormatContext& ctx) const
-    {
-        return fmt::format_to(ctx.out(), "{}", _value.value);
+        return fmt::format_to(ctx.out(), "{}", val.value);
     }
 };
 
