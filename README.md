@@ -128,7 +128,7 @@ template <typename Func, typename... Tuple> struct Wrap_with_tuple {
 
   template <typename call_tuple, typename T, T... ints>
   decltype(auto) make_call(call_tuple arg_tuple,
-                           std::integer_sequence<T, ints...> int_seq) {
+    std::integer_sequence<T, ints...> int_seq) {
     return _func(
         std::get<std::decay_t<decltype(std::get<ints>(_order))>>(arg_tuple)...);
   }
