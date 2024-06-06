@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 #pragma once
 
+#include <compare>
 #include <iostream>
 #include <limits>
 #include <type_traits>
