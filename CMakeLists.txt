@@ -20,6 +20,9 @@ target_include_directories(boxed-cpp INTERFACE
     $<BUILD_INTERFACE:${${PROJECT_NAME}_SOURCE_DIR}/include>
     $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+    target_compile_definitions(boxed-cpp INTERFACE BOXED_DEBUG)
+endif()
 
 # Generate the version, config and target files
 include(CMakePackageConfigHelpers)
