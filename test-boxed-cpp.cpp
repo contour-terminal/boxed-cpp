@@ -4,6 +4,7 @@
 #include <cmath>
 #include <functional>
 #include <limits>
+#include <stdexcept>
 #include <type_traits>
 
 #include <boxed-cpp/boxed.hpp>
@@ -214,4 +215,30 @@ TEST_CASE("advanced")
 
     REQUIRE(x_coord(rho, theta, phi) == x_coord(theta, phi, rho));
     REQUIRE(x_coord(phi, theta, rho) == x_coord(phi, theta, rho));
+}
+
+TEST_CASE("devision of integral_types")
+{
+    using Int = boxed::boxed<int>;
+    int int_a { 10 };
+    Int Int_a { 10 };
+    int int_b { 3 };
+    Int Int_b { 3 };
+#if defined(BOXED_DEBUG)
+    REQUIRE_THROWS_AS(int_a / Int_b, std::invalid_argument);
+    REQUIRE_THROWS_AS(Int_a / int_b, std::invalid_argument);
+    REQUIRE_THROWS_AS(Int_a / Int_b, std::invalid_argument);
+    REQUIRE_THROWS_AS(
+        [&]() {
+            Int_a /= Int_b;
+        }(),
+        std::invalid_argument);
+
+#else
+    REQUIRE(unbox(int_a / Int_b) == 3);
+    REQUIRE(unbox(Int_a / int_b) == 3);
+    REQUIRE(unbox(Int_a / Int_b) == 3);
+    Int_a /= Int_b;
+    REQUIRE(unbox(Int_a) == 3);
+#endif
 }
