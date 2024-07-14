@@ -212,9 +212,6 @@ struct hash<boxed::detail::boxed<T, U>>
 #include <fmt/format.h>
 // clang-format on
 
-namespace fmt
-{
-
 template <typename Type, typename Tag>
 struct fmt::formatter<boxed::detail::boxed<Type, Tag>>
 {
@@ -226,6 +223,5 @@ struct fmt::formatter<boxed::detail::boxed<Type, Tag>>
     }
 };
 
-} // namespace fmt
 #endif
 // }}}
