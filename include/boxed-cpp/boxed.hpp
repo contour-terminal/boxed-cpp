@@ -212,20 +212,16 @@ struct hash<boxed::detail::boxed<T, U>>
 #include <fmt/format.h>
 // clang-format on
 
-namespace fmt
-{
-
 template <typename Type, typename Tag>
 struct fmt::formatter<boxed::detail::boxed<Type, Tag>>
 {
     constexpr auto parse(fmt::format_parse_context& ctx) { return ctx.begin(); }
 
-    auto format(boxed::detail::boxed<Type, Tag> const& val, fmt::format_context& ctx)
+    auto format(boxed::detail::boxed<Type, Tag> const& val, fmt::format_context& ctx) const
     {
         return fmt::format_to(ctx.out(), "{}", val.value);
     }
 };
 
-} // namespace fmt
 #endif
 // }}}
