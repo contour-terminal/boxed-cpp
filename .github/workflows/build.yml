@@ -11,17 +11,17 @@ on:
 jobs:
   check_clang_format:
     name: "Check C++ style"
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@v3
       - name: Install clang
         run: |
           wget https://apt.llvm.org/llvm.sh
           chmod +x llvm.sh
-          sudo ./llvm.sh 17
-          sudo apt-get install clang-format-17
+          sudo ./llvm.sh 18
+          sudo apt-get install clang-format-18
       - name: "Clang-format"
-        run: clang-format-17 --Werror --dry-run test-boxed-cpp.cpp include/boxed-cpp/boxed.hpp
+        run: clang-format-18 --Werror --dry-run test-boxed-cpp.cpp include/boxed-cpp/boxed.hpp
 
   editorconfig:
     name: "Check editorconfig"
@@ -37,7 +37,7 @@ jobs:
       matrix:
         os: [ubuntu-22.04, ubuntu-20.04]
         cxx: [20]
-        build_type: ["RelWithDebInfo"]
+        build_type: ["RelWithDebInfo", "Debug"]
         llvm_version:
           [
             "17",

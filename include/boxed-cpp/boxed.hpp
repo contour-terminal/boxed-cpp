@@ -4,7 +4,11 @@
 #include <compare>
 #include <iostream>
 #include <limits>
+#include <stdexcept>
 #include <type_traits>
+#if defined(BOXED_DEBUG)
+    #include <cassert>
+#endif
 
 namespace boxed
 {
@@ -126,7 +130,41 @@ template <typename T, typename U> constexpr boxed<T, U>& operator/=(boxed<T, U>&
 template <typename T, typename U> constexpr boxed<T, U>& operator%=(boxed<T, U>& a, boxed<T, U> const& b) noexcept { a.value %= b.value; return a; }
 
 template <typename T, typename U> std::ostream& operator<<(std::ostream& os, boxed<T, U> const& v) { return os << v.value; }
-    // clang-format on
+
+// clang-format on
+#if defined(BOXED_DEBUG)
+
+    template <std::integral T, typename U>
+    constexpr boxed<T, U> operator/(boxed<T, U> const& a, boxed<T, U> const& b)
+    {
+        auto div = std::div(b.value, a.value);
+        if (div.rem != 0)
+            throw std::invalid_argument("Division is not exact");
+        return boxed<T, U> { div.quot };
+    }
+
+    template <std::integral T, typename U>
+    constexpr boxed<T, U> operator/(boxed<T, U> const& a, T b)
+    {
+        return a / boxed<T, U> { b };
+    }
+
+    template <std::integral T, typename U>
+    constexpr boxed<T, U> operator/(T b, boxed<T, U> const& a)
+    {
+        return boxed<T, U> { b } / a;
+    }
+
+    template <std::integral T, typename U>
+    constexpr boxed<T, U>& operator/=(boxed<T, U>& a, boxed<T, U> const& b)
+    {
+        auto res = a / b;
+        a = res;
+        return a;
+    }
+
+#endif
+
 } // namespace detail
 
 namespace helper
@@ -213,7 +251,7 @@ struct hash<boxed::detail::boxed<T, U>>
 // clang-format on
 
 template <typename Type, typename Tag>
-struct fmt::formatter<boxed::detail::boxed<Type, Tag>>
+struct formatter<boxed::detail::boxed<Type, Tag>>
 {
     constexpr auto parse(fmt::format_parse_context& ctx) { return ctx.begin(); }
 
